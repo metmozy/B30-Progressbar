@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body{
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .content-box{
+            margin: 0 auto;
+            width: 70vw;
+        }
+
+        .content-header{
+            text-align: center;
+            font-size: 25px;
+        }
+
+        .content-body{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        form{
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input[type=file]{
+            background-color: white;
+            width: 500px;
+            border-radius: 10px;
+            height: 50px;
+            cursor:pointer;
+            border: 0.1px solid rgb(236, 236, 236);
+            font-size: 15px;
+        }
+
+        ::-webkit-file-upload-button{
+            background-color: #14A44D;
+            width: 20%;
+            height: 100%;
+            border: none;
+            cursor: pointer;
+            color: white;
+        }
+
+        ::-webkit-file-upload-button:hover{
+            background-color: #0e813c;
+        }
+
+        #progressBar{
+            width: 90%;
+            height: 40px;
+            appearance: red;
+        }
+
+        
+
+        progress::-webkit-progress-value {
+    background-color: red; /* Color of the progress */
+}
+
+        #btn{
+            background-color: #0275d8;
+            width: 200px;
+            cursor: pointer;
+            color: white;
+            height: 40px;
+            border: none;
+            font-size: 15px;
+            border-radius: 10px;
+            margin: 20px;
+        }
+
+        #btn:hover{
+            background-color: #066ac2;
+        }
+        
+        
+    </style>
+<body>
+    <div class="container">
+        <div class="content-box">
+            <div class="content-header">
+                <h2>Upload Progress bar!</h2>
+            </div>
+            <div class="content-body">
+                    <div class="input-box">
+                        <input type="file" id="fileInput" >
+                    </div>
+                    <button id="btn" onclick="uploadFile()" >Upload</button>
+                    <progress id="progressBar" value="0" max="100"></progress>
+                    <p id="status"></p>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function uploadFile(){
+            const fileInput = document.getElementById('fileInput');
+            const progressBar = document.getElementById('progressBar');
+            const status = document.getElementById('status');
+            
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("กรุณาเลือกไฟล์");
+                return;
+            }
+
+
+            //สร้าง FormData object ซึ่งใช้สำหรับเก็บข้อมูลที่ต้องการส่งไปยังเซิร์ฟเวอร์
+            const formData = new FormData();
+            //เพื่อเพิ่มไฟล์ที่เลือกลงใน FormData object โดยใช้คีย์ว่า "file". ซึ่งไฟล์นี้จะถูกส่งไปในคำขอแบบ POST ที่มีชื่อว่า "file"
+            formData.append("file", file);
+
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "upload.php", true);
+
+            // อัปเดตสถานะของ progress bar
+            xhr.upload.onprogress = function(event) {
+                if (event.lengthComputable) {
+                    const percentComplete = (event.loaded / event.total) * 100;
+                    progressBar.value = percentComplete;
+                    status.innerText = `กำลังอัปโหลด: ${Math.round(percentComplete)}%`;
+                }
+            };
+
+
+             // เมื่ออัปโหลดเสร็จสิ้น
+             xhr.onload = function() {
+                if (xhr.status === 200) {
+                    progressBar.value = 100;
+                    status.innerText = "อัปโหลดสำเร็จ!";
+                } else {
+                    status.innerText = "การอัปโหลดล้มเหลว";
+                }
+                };
+
+                xhr.onerror = function() {
+                    status.innerText = "เกิดข้อผิดพลาดระหว่างการอัปโหลด";
+                };
+
+                xhr.send(formData);
+        }
+    </script>
+</body>
+</html>
