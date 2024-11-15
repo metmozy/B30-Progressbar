@@ -114,52 +114,62 @@
 
     <script>
         function uploadFile(){
+            //อ้างอิงไปถึง elements
             const fileInput = document.getElementById('fileInput');
             const progressBar = document.getElementById('progressBar');
             const status = document.getElementById('status');
             
+            //เลือกไฟล์แรกมาเก็บไว้ในตัวแปร file
             const file = fileInput.files[0];
 
+            //บังคับให้ user เลือก file
             if (!file) {
                 alert("กรุณาเลือกไฟล์");
                 return;
             }
 
 
-            //สร้าง FormData object ซึ่งใช้สำหรับเก็บข้อมูลที่ต้องการส่งไปยังเซิร์ฟเวอร์
+            //สร้าง FormData object ซึ่งใช้เก็บข้อมูลที่ต้องการส่งไปยัง server
             const formData = new FormData();
-            //เพื่อเพิ่มไฟล์ที่เลือกลงใน FormData object โดยใช้คีย์ว่า "file". ซึ่งไฟล์นี้จะถูกส่งไปในคำขอแบบ POST ที่มีชื่อว่า "file"
+
+            //เพิ่มไฟล์ที่เลือกลงใน FormData object
             formData.append("file", file);
 
-
+            //สร้าง object XHR มา 
             const xhr = new XMLHttpRequest();
+            
+            //Method Open() ใช้ตั้งค่าตอนส่งข้อมูล server แบบ async คือคำสั่งจะทำงานต่อโดยไม่ต้องรอ server ตอบกลับ
             xhr.open("POST", "upload.php", true);
 
-            // อัปเดตสถานะของ progress bar
-            xhr.upload.onprogress = function(event) {
-                if (event.lengthComputable) {
-                    const percentComplete = (event.loaded / event.total) * 100;
+
+            //อัปเดตสถานะของ progress bar เรื่อยๆ 
+            xhr.upload.onprogress = function(event) { //event จะมีข้อมูลเกี่ยวกับการ upload จะทำงานทุกครั้งที่มีการอัปโหลด
+                if (event.lengthComputable) { //lengthComputable คือสามารถดูขนาดไฟล์ที่ upload ได้ไหม ถ้าได้จะเป็น true
+                    const percentComplete = (event.loaded / event.total) * 100; //หา percent ของการ upload 
                     progressBar.value = percentComplete;
                     status.innerText = `กำลังอัปโหลด: ${Math.round(percentComplete)}%`;
                 }
             };
+            
+            //ส่งข้อมูลไปยัง server เพื่อนทำการบันทึกข้อมูล
+            xhr.send(formData);
 
-
-             // เมื่ออัปโหลดเสร็จสิ้น
-             xhr.onload = function() {
-                if (xhr.status === 200) {
-                    progressBar.value = 100;
+            //เมื่ออัปโหลดข้อมูลเสร็จ function นี้ถึงจะทำงาน
+            //ไว้บอกสถานะของ request
+            xhr.onload = function() {
+                if(xhr.status === 200){ //200 หมายความว่า request ไปยัง server ได้สำเร็จ
+                    progressBar.value = 100; 
                     status.innerText = "อัปโหลดสำเร็จ!";
-                } else {
+                }else{
                     status.innerText = "การอัปโหลดล้มเหลว";
                 }
-                };
+            };
 
-                xhr.onerror = function() {
+            //จะทำงานเมื่อเกิดข้อผิดพลาดในระหว่างการส่งคำขอ เช่น สัญญาณอินเตอร์เน็ตหลุด
+            xhr.onerror = function(){
                     status.innerText = "เกิดข้อผิดพลาดระหว่างการอัปโหลด";
-                };
+            };
 
-                xhr.send(formData);
         }
     </script>
 </body>
